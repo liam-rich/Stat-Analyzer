@@ -5,7 +5,16 @@ from datetime import datetime
 def search_player(player_name):
     """Search for a player by name"""
     try:
-        player_list = players.find_players_by_full_name(player_name)
+        # Validate input
+        if not player_name or not player_name.strip():
+            return []
+
+        # Remove special characters and validate
+        cleaned_name = ''.join(c for c in player_name if c.isalnum() or c.isspace())
+        if not cleaned_name:
+            return []
+
+        player_list = players.find_players_by_full_name(cleaned_name)
         if not player_list:
             raise ValueError('No players found. Try using the player\'s full name.')
         return player_list
@@ -143,6 +152,68 @@ def display_player_stats(stats):
         print(f"Games Played: {ct['GP']}")
         print(f"Minutes Played: {ct['MIN']}")
 
+def compare_players(player1_stats, player2_stats):
+    """Compare stats between two players"""
+    if not player1_stats or not player2_stats:
+        print("Cannot compare - stats missing for one or both players")
+        return
+        
+    print("\nPlayer Comparison:")
+    print("=" * 70)
+    p1 = player1_stats['info']
+    p2 = player2_stats['info']
+    
+    # Basic Info Comparison
+    print(f"{'Attribute':<20} {p1['name']:<25} {p2['name']:<25}")
+    print("-" * 70)
+    print(f"{'Position':<20} {p1['position']:<25} {p2['position']:<25}")
+    print(f"{'Team':<20} {p1['team']:<25} {p2['team']:<25}")
+    print(f"{'Experience':<20} {p1['experience']:<25} {p2['experience']:<25}")
+    
+    # Recent Averages Comparison
+    if player1_stats['recent_averages'] and player2_stats['recent_averages']:
+        print("\nRecent Averages (Last 5 Games):")
+        print("-" * 70)
+        ra1 = player1_stats['recent_averages']
+        ra2 = player2_stats['recent_averages']
+        
+        print(f"{'Points':<20} {ra1['points']:>6.1f}{' ':>19} {ra2['points']:>6.1f}{' ':>19}")
+        print(f"{'Rebounds':<20} {ra1['rebounds']:>6.1f}{' ':>19} {ra2['rebounds']:>6.1f}{' ':>19}")
+        print(f"{'Assists':<20} {ra1['assists']:>6.1f}{' ':>19} {ra2['assists']:>6.1f}{' ':>19}")
+        print(f"{'Steals':<20} {ra1['steals']:>6.1f}{' ':>19} {ra2['steals']:>6.1f}{' ':>19}")
+        print(f"{'Blocks':<20} {ra1['blocks']:>6.1f}{' ':>19} {ra2['blocks']:>6.1f}{' ':>19}")
+        print(f"{'FG%':<20} {ra1['fg_pct']*100:>6.1f}%{' ':>18} {ra2['fg_pct']*100:>6.1f}%{' ':>18}")
+        print(f"{'3P%':<20} {ra1['fg3_pct']*100:>6.1f}%{' ':>18} {ra2['fg3_pct']*100:>6.1f}%{' ':>18}")
+        print(f"{'FT%':<20} {ra1['ft_pct']*100:>6.1f}%{' ':>18} {ra2['ft_pct']*100:>6.1f}%{' ':>18}")
+    
+    # Career Comparison
+    if player1_stats['career_totals'] and player2_stats['career_totals']:
+        print("\nCareer Averages:")
+        print("-" * 70)
+        ct1 = player1_stats['career_totals']
+        ct2 = player2_stats['career_totals']
+        gp1 = ct1['GP']
+        gp2 = ct2['GP']
+        
+        print(f"{'Games Played':<20} {ct1['GP']:>6}{' ':>19} {ct2['GP']:>6}{' ':>19}")
+        print(f"{'Points':<20} {ct1['PTS']/gp1:>6.1f}{' ':>19} {ct2['PTS']/gp2:>6.1f}{' ':>19}")
+        print(f"{'Rebounds':<20} {ct1['REB']/gp1:>6.1f}{' ':>19} {ct2['REB']/gp2:>6.1f}{' ':>19}")
+        print(f"{'Assists':<20} {ct1['AST']/gp1:>6.1f}{' ':>19} {ct2['AST']/gp2:>6.1f}{' ':>19}")
+        print(f"{'Steals':<20} {ct1['STL']/gp1:>6.1f}{' ':>19} {ct2['STL']/gp2:>6.1f}{' ':>19}")
+        print(f"{'Blocks':<20} {ct1['BLK']/gp1:>6.1f}{' ':>19} {ct2['BLK']/gp2:>6.1f}{' ':>19}")
+        print(f"{'FG%':<20} {ct1['FG_PCT']*100:>6.1f}%{' ':>18} {ct2['FG_PCT']*100:>6.1f}%{' ':>18}")
+        print(f"{'3P%':<20} {ct1['FG3_PCT']*100:>6.1f}%{' ':>18} {ct2['FG3_PCT']*100:>6.1f}%{' ':>18}")
+        print(f"{'FT%':<20} {ct1['FT_PCT']*100:>6.1f}%{' ':>18} {ct2['FT_PCT']*100:>6.1f}%{' ':>18}")
+        
+        # Career Totals
+        print("\nCareer Totals:")
+        print("-" * 70)
+        print(f"{'Total Points':<20} {ct1['PTS']:>6}{' ':>19} {ct2['PTS']:>6}{' ':>19}")
+        print(f"{'Total Rebounds':<20} {ct1['REB']:>6}{' ':>19} {ct2['REB']:>6}{' ':>19}")
+        print(f"{'Total Assists':<20} {ct1['AST']:>6}{' ':>19} {ct2['AST']:>6}{' ':>19}")
+        print(f"{'Total Steals':<20} {ct1['STL']:>6}{' ':>19} {ct2['STL']:>6}{' ':>19}")
+        print(f"{'Total Blocks':<20} {ct1['BLK']:>6}{' ':>19} {ct2['BLK']:>6}{' ':>19}")
+
 def main():
     print("Welcome to NBA Stats Analyzer!")
     print("Loading data...")
@@ -150,9 +221,10 @@ def main():
     while True:
         print("\nNBA Stats Analyzer")
         print("1. Search for a player")
-        print("2. Exit")
+        print("2. Compare two players")
+        print("3. Exit")
         
-        choice = input("\nEnter your choice (1-2): ")
+        choice = input("\nEnter your choice (1-3): ")
         
         try:
             if choice == '1':
@@ -184,8 +256,56 @@ def main():
                         print('Invalid input. Please enter a number.')
                 else:
                     print('No players found.')
-                    
+            
             elif choice == '2':
+                # First player
+                name1 = input('Enter first player name: ')
+                players1 = search_player(name1)
+                if not players1:
+                    print('No players found.')
+                    continue
+                
+                print('\nFound Players:')
+                for i, player in enumerate(players1, 1):
+                    print(f"{i}. {player['full_name']}")
+                
+                choice1 = input('Select first player number: ')
+                try:
+                    index1 = int(choice1) - 1
+                    if not (0 <= index1 < len(players1)):
+                        print('Invalid selection.')
+                        continue
+                except ValueError:
+                    print('Invalid input.')
+                    continue
+                
+                # Second player
+                name2 = input('Enter second player name: ')
+                players2 = search_player(name2)
+                if not players2:
+                    print('No players found.')
+                    continue
+                
+                print('\nFound Players:')
+                for i, player in enumerate(players2, 1):
+                    print(f"{i}. {player['full_name']}")
+                
+                choice2 = input('Select second player number: ')
+                try:
+                    index2 = int(choice2) - 1
+                    if not (0 <= index2 < len(players2)):
+                        print('Invalid selection.')
+                        continue
+                except ValueError:
+                    print('Invalid input.')
+                    continue
+                
+                print("\nFetching stats for comparison...")
+                stats1 = get_player_stats(players1[index1]['id'])
+                stats2 = get_player_stats(players2[index2]['id'])
+                compare_players(stats1, stats2)
+                    
+            elif choice == '3':
                 print('Thanks for using NBA Stats Analyzer!')
                 break
                 
