@@ -62,4 +62,4 @@ When creating a new issue, include:
 - Any relevant screenshots or logs
 
 ## Code of Conduct
-This project adheres to the Contributor Covenant Code of Conduct. By participating, you are expected to uphold this code. Please report any unacceptable behavior to maintainer@example.com.
+This project adheres to the Contributor Covenant Code of Conduct. By participating, you are expected to uphold this code. Please report any unacceptable behavior to lrich2@luc.edu
