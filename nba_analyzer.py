@@ -250,6 +250,7 @@ def main():
                             print("\nFetching comprehensive player stats...")
                             stats = get_player_stats(players_found[index]['id'])
                             display_player_stats(stats)
+                            plot_player_stats(stats)
                         else:
                             print('Invalid selection.')
                     except ValueError:
@@ -304,6 +305,7 @@ def main():
                 stats1 = get_player_stats(players1[index1]['id'])
                 stats2 = get_player_stats(players2[index2]['id'])
                 compare_players(stats1, stats2)
+                plot_comparison(stats1, stats2)
                     
             elif choice == '3':
                 print('Thanks for using NBA Stats Analyzer!')
@@ -316,6 +318,116 @@ def main():
             print(f'An error occurred: {str(e)}')
             
         input('\nPress Enter to continue...')
+
+import matplotlib.pyplot as plt
+
+def plot_player_stats(stats):
+    """Graphically illustrate a player's recent averages as bar charts, saved to files."""
+    if not stats or not stats['recent_averages']:
+        print("No stats available to plot.")
+        return
+
+    averages = stats['recent_averages']
+    categories = list(averages.keys())
+    values = list(averages.values())
+
+    # Separate percentages and other stats
+    percentage_categories = ['fg_pct', 'fg3_pct', 'ft_pct']
+    percentage_values = [averages[c] * 100 for c in percentage_categories if c in averages]
+    other_categories = [c for c in categories if c not in percentage_categories]
+    other_values = [averages[c] for c in other_categories]
+
+    # Plot other stats
+    plt.figure(figsize=(10, 6))
+    plt.bar(other_categories, other_values, color='blue', alpha=0.7)
+    plt.title(f"{stats['info']['name']} - Recent Averages (Counts)", fontsize=16)
+    plt.xlabel("Stat Categories", fontsize=14)
+    plt.ylabel("Values", fontsize=14)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    count_file = f"{stats['info']['name'].replace(' ', '_').lower()}_recent_averages_counts.png"
+    plt.savefig(count_file)
+    print(f"Counts plot saved as {count_file}")
+    plt.close()
+
+    # Plot percentages
+    plt.figure(figsize=(8, 6))
+    plt.bar(percentage_categories, percentage_values, color='green', alpha=0.7)
+    plt.title(f"{stats['info']['name']} - Recent Averages (Percentages)", fontsize=16)
+    plt.xlabel("Stat Categories", fontsize=14)
+    plt.ylabel("Percentage (%)", fontsize=14)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    percent_file = f"{stats['info']['name'].replace(' ', '_').lower()}_recent_averages_percentages.png"
+    plt.savefig(percent_file)
+    print(f"Percentages plot saved as {percent_file}")
+    plt.close()
+
+
+def plot_comparison(player1_stats, player2_stats):
+    """Graphically compare two players' recent averages and career averages, saved to files."""
+    if not player1_stats or not player2_stats:
+        print("Cannot compare - stats missing for one or both players.")
+        return
+
+    if not player1_stats['recent_averages'] or not player2_stats['recent_averages']:
+        print("No recent averages available to compare.")
+        return
+
+    # Extract stats
+    averages1 = player1_stats['recent_averages']
+    averages2 = player2_stats['recent_averages']
+
+    categories = list(averages1.keys())
+    percentage_categories = ['fg_pct', 'fg3_pct', 'ft_pct']
+    other_categories = [c for c in categories if c not in percentage_categories]
+
+    # Values for other stats
+    other_values1 = [averages1[c] for c in other_categories]
+    other_values2 = [averages2[c] for c in other_categories]
+
+    # Values for percentages
+    percentage_values1 = [averages1[c] * 100 for c in percentage_categories]
+    percentage_values2 = [averages2[c] * 100 for c in percentage_categories]
+
+    # Plot other stats comparison
+    x = range(len(other_categories))
+    plt.figure(figsize=(12, 6))
+    plt.bar(x, other_values1, width=0.4, label=player1_stats['info']['name'], color='blue', alpha=0.7)
+    plt.bar([i + 0.4 for i in x], other_values2, width=0.4, label=player2_stats['info']['name'], color='orange', alpha=0.7)
+    plt.title("Comparison of Recent Averages (Counts)", fontsize=16)
+    plt.xlabel("Stat Categories", fontsize=14)
+    plt.ylabel("Values", fontsize=14)
+    plt.xticks([i + 0.2 for i in x], other_categories, rotation=45)
+    plt.legend()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    count_file = f"{player1_stats['info']['name'].replace(' ', '_').lower()}_vs_{player2_stats['info']['name'].replace(' ', '_').lower()}_counts_comparison.png"
+    plt.savefig(count_file)
+    print(f"Counts comparison plot saved as {count_file}")
+    plt.close()
+
+    # Plot percentages comparison
+    x = range(len(percentage_categories))
+    plt.figure(figsize=(10, 6))
+    plt.bar(x, percentage_values1, width=0.4, label=player1_stats['info']['name'], color='green', alpha=0.7)
+    plt.bar([i + 0.4 for i in x], percentage_values2, width=0.4, label=player2_stats['info']['name'], color='purple', alpha=0.7)
+    plt.title("Comparison of Recent Averages (Percentages)", fontsize=16)
+    plt.xlabel("Stat Categories", fontsize=14)
+    plt.ylabel("Percentage (%)", fontsize=14)
+    plt.xticks([i + 0.2 for i in x], percentage_categories, rotation=45)
+    plt.legend()
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    percent_file = f"{player1_stats['info']['name'].replace(' ', '_').lower()}_vs_{player2_stats['info']['name'].replace(' ', '_').lower()}_percentages_comparison.png"
+    plt.savefig(percent_file)
+    print(f"Percentages comparison plot saved as {percent_file}")
+    plt.close()
+
+
+
 
 if __name__ == '__main__':
     main()
